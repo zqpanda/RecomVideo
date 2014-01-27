@@ -1,0 +1,28 @@
+#!/home/hao123/tools/python/bin/python2.7
+# -*- coding:utf-8 -*-
+import urllib2,sys
+import bs4,re
+from bs4 import BeautifulSoup
+"""
+抓取网页信息（影片名、下载量、海报图片url等）
+"""
+def crawl():
+    headers = {'User-Agent':'Mozilla/5.0 (Windows NT 5.2; rv:7.0.1) Gecko/20100101 FireFox/7.0.1'}
+    url = sys.argv[1]
+    req=urllib2.Request(url,headers=headers)
+    f = urllib2.urlopen(req).info()
+    charset = f.getparam('charset')
+    content=urllib2.urlopen(req).read()
+    soup = BeautifulSoup(content)
+    target = soup.findAll('div',id='topic')
+    num_pattern = ur'\d+'
+    for item in target:
+        title = item.find('h1').text
+        raw_num = item.find('div').text
+        m = re.search(num_pattern,raw_num)
+        num = m.group()
+        img = item.find('img').attrs['src']
+        print 'Title:',title.encode('utf8')
+        print 'Num:',num.encode('utf8')
+        print 'Img:',img.encode('utf8')
+        print '------------'
