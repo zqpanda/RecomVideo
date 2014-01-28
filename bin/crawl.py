@@ -1,31 +1,47 @@
 #!/home/hao123/tools/python/bin/python2.7
 # -*- coding:utf-8 -*-
 import urllib2,sys
-import bs4,re
+import bs4,re,socket
 from bs4 import BeautifulSoup
 """
 抓取网页信息（影片名、下载量、海报图片url等）
 """
-def parse_num(text):
-    num_pattern = ur'\d+'
-    m = re.search(num_pattern,text)
-    return m.group()
+class WebCrawl:
+    def __init__(self,name,url,type):
+        self.name=name
+        self.url=url
+        self.type=type
+        self.headers = {'User-Agent':'Mozilla/5.0 (Windows NT 5.2; rv:7.0.1) Gecko/20100101 FireFox/7.0.1'}
+        self.req=urllib2.Request(self.url,headers=self.headers)
+        self.info=urllib2.urlopen(self.req).info()
+        if(self.info.getparam('charset')):self.charset=self.info.getparam('charset')
+        else:self.charset='utf8'
+    def crawl_content(self,url):
+        try:
+            socket.setdefaulttimeout(3)
+            print url
+            req=urllib2.Request(url,headers=self.headers)
+            content=urllib2.urlopen(req).read()
+            return unicode(content,self.charset).encode('utf8')
+        except Exception as e:
+            print url
+    def parse_num(self,text):
+        num_pattern = ur'\d+'
+        m=re.search(num_pattern,text)
+        return m.group()
+    def crawl(self,url,crawl_info):
+        print url
+        content=self.crawl_content(url)
+        soup = BeautifulSoup(content)
+        target = soup.findAll(crawl_info['block']['tag'],crawl_info['block']['attr'])
+        raw_info = list()
+        for item in target:
+            title=item.find(crawl_info['title']['tag'],crawl_info['title']['attr']).text
+            num=self.parse_num(item.find(crawl_info['num']['tag'],crawl_info['num']['attr']).text)
+            img=item.find(crawl_info['img']['tag'],crawl_info['img']['attr']).attrs['src']
+            raw_info.append({'Title':title,'Num':num,'Img':img})
+        return raw_info
 
-def crawl(url,page_desc):
-    headers = {'User-Agent':'Mozilla/5.0 (Windows NT 5.2; rv:7.0.1) Gecko/20100101 FireFox/7.0.1'}
-    req=urllib2.Request(url,headers=headers)
-    f = urllib2.urlopen(req).info()
-    charset = f.getparam('charset')
-    content=urllib2.urlopen(req).read()
-    soup = BeautifulSoup(content)
-    target = soup.findAll(page_desc['block']['tag'],page_desc['block']['attr'])
-    raw_info = list()
-    for item in target:
-        title = item.find(page_desc['title']['tag'],page_desc['title']['attr']).text
-        num = parse_num(item.find(page_desc['num']['tag'],page_desc['num']['attr']).text)
-        img = item.find(page_desc['img']['tag'],page_desc['img']['attr']).attrs['src']
-        raw_info.append({'Title':title,'Num':num,'Img':img})
-    return raw_info
 def main():
     myegy_desc = {
         'block':{'tag':'div','attr':{'id':'topic'}},
@@ -52,9 +68,8 @@ def main():
         'img':{'tag':'img','attr':{}}
     }
     url = sys.argv[1]
-    result = crawl(url,mazika2day_desc)
-    for item in result:
-        print item
-
+    myegy = WebCrawl('mazika2day',url,0)
+    result = myegy.crawl(url,mazika2day_desc)
+    print result
 if __name__ == '__main__':
     main()
