@@ -14,7 +14,8 @@ def para_read(para_path):
     cf.read(para_path)
     return cf
 #电影名过滤
-def raw_title_trim():
+def raw_title_trim(raw_data):
+    '''
     conn = mdb.connect(host="10.48.47.34",user="xiaoling",passwd="xiaoling",db="video_recom_ar",port=6001,charset="utf8")
     cursor = conn.cursor()
     cursor.execute('set names utf8')
@@ -22,6 +23,23 @@ def raw_title_trim():
     n = cursor.execute(sql)
     for row in cursor.fetchall():
         print row[0].encode('utf8')
+    '''
+    trim_conf_file = '../conf/trim_list.conf'
+    input_file_handler = open(trim_conf_file)
+    trim_list= []
+    for line in input_file_handler.readlines():
+        line=line.strip()
+        trim_list.append(line.decode('utf8'))
+    input_file_handler.close()
+
+    for i in xrange(len(raw_data)):
+        temp_name = raw_data[i]["raw_title"]
+        print temp_name
+        for j in xrange(len(trim_list)):
+            temp_name = temp_name.replace(trim_list[j],'')
+        raw_data[i]["Trim_name"] = temp_name.strip()
+    return raw_data
+
 #主程序
 def main():
     #被抓取网站配置信息包括url及抓取页面编号
@@ -81,50 +99,54 @@ def main():
         'port' : db_cf.getint('db','db_port')
     }
     #开始抓取
-#    cima4u = WebCrawl('cima4u',cima4u_info['url'],0)
-#    cima4u_data = list()
-#    for page in cima4u_info['page_list']:
-#        cima4u_data.extend(cima4u.crawl(cima4u_info['url']+page,cima4u_desc))
-#    print 'Cima4u finished! Got %d records' %(len(cima4u_data))
-#    myegy_ar = WebCrawl('myegy_ar',myegy_info['ar_url'],1)
-#    myegy_en = WebCrawl('myegy_en',myegy_info['en_url'],1)
-#    myegy_in = WebCrawl('myegy_in',myegy_info['in_url'],1)
-#    myegy_data = list()
-#    for page in myegy_info['page_list']:
-#        myegy_data.extend(myegy_ar.crawl(myegy_info['ar_url']+page,myegy_desc))
-#        myegy_data.extend(myegy_en.crawl(myegy_info['en_url']+page,myegy_desc))
-#        myegy_data.extend(myegy_in.crawl(myegy_info['in_url']+page,myegy_desc))
-#    print 'Myegy finished! Got %d records' %(len(myegy_data))
-#    arabseed_d = WebCrawl('arabseed_d',arabseed_info['d_url'],1)
-#    arabseed_f = WebCrawl('arabseed_f',arabseed_info['f_url'],1)
-#    arabseed_data = list()
-#    for page in arabseed_info['page_list']:
-#        arabseed_data.extend(arabseed_d.crawl(arabseed_info['d_url']+page,arabseed_desc))
-#        arabseed_data.extend(arabseed_f.crawl(arabseed_info['f_url']+page,arabseed_desc))
-#    print 'Arabseed finished! Got %d records' %(len(arabseed_data))
-    print mazika2day_info['d_url']
-    sys.exit()
-    mazika2day_d = WebCrawl('mazika2day_d',mazika2day_info['d_url'],1)
-    print mazika2day_info['d_url']
-    sys.exit()
-    mazika2day_f = WebCrawl('mazika2day_f',mazika2day_info['f_url'],1)
+    '''
+    cima4u = WebCrawl('cima4u',cima4u_info['url'],0)
+    cima4u_data = list()
+    for page in cima4u_info['page_list']:
+        cima4u_data.extend(cima4u.crawl(cima4u_info['url']+page,cima4u_desc))
+    print 'Cima4u finished! Got %d records' %(len(cima4u_data))
+    myegy_ar = WebCrawl('myegy_ar',myegy_info['ar_url'],1)
+    myegy_en = WebCrawl('myegy_en',myegy_info['en_url'],1)
+    myegy_in = WebCrawl('myegy_in',myegy_info['in_url'],1)
+    myegy_data = list()
+    for page in myegy_info['page_list']:
+        myegy_data.extend(myegy_ar.crawl(myegy_info['ar_url']+page,myegy_desc))
+        myegy_data.extend(myegy_en.crawl(myegy_info['en_url']+page,myegy_desc))
+        myegy_data.extend(myegy_in.crawl(myegy_info['in_url']+page,myegy_desc))
+    print 'Myegy finished! Got %d records' %(len(myegy_data))
+    arabseed_d = WebCrawl('arabseed_d',arabseed_info['d_url'],1)
+    arabseed_f = WebCrawl('arabseed_f',arabseed_info['f_url'],1)
+    arabseed_data = list()
+    for page in arabseed_info['page_list']:
+        arabseed_data.extend(arabseed_d.crawl(arabseed_info['d_url']+page,arabseed_desc))
+        arabseed_data.extend(arabseed_f.crawl(arabseed_info['f_url']+page,arabseed_desc))
+    print 'Arabseed finished! Got %d records' %(len(arabseed_data))
+    mazika2day_d = WebCrawl('mazika2day_d',mazika2day_info['d_url']+mazika2day_info['d_suffix'],1)
+    mazika2day_f = WebCrawl('mazika2day_f',mazika2day_info['f_url']+mazika2day_info['f_suffix'],1)
     mazika2day_data = list()
     for page in mazika2day_info['page_list']:
         mazika2day_data.extend(mazika2day_d.crawl(mazika2day_info['d_url']+page+mazika2day_info['d_suffix'],mazika2day_desc))
         mazika2day_data.extend(mazika2day_f.crawl(mazika2day_info['f_url']+page+mazika2day_info['f_suffix'],mazika2day_desc))
     print 'Mazika2day finished! Got %d records' %(len(mazika2day_data))
+    '''
     #合并原始影片信息并入库
-
-
-
+    print 'Hi, We came here'
+    all_raw_data=list()
+    all_raw_data.extend(cima4u_data,myegy_data,arabseed_data,mazika2day)
+    trim_data = raw_title_trim(all_raw_data)
     #数据库初始化及选择数据库
-#    mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
-#    mydb.selectDb('video_recom_ar')
-#    sql = "select raw_title from movie_raw_data"
-#    result = mydb.queryAll(sql)
+    mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
+    mydb.selectDb('video_recom_ar')
+    sql = 
+    raw_data = mydb.queryAll(sql)
 #    for line in result:
 #        print 'Raw Title: %s' % (line['raw_title'])
 #    print 'Done'
+    trimed_data = raw_title_trim(raw_data)
+    for line in trimed_data:
+        print 'Raw_title: %s #### Trimed_title: %s' %(line['raw_title'].encode('utf8'),line['Trim_name'].encode('utf8'))
+
+
 if __name__ == '__main__':
     main()
 
