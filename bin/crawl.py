@@ -1,7 +1,7 @@
 #!/home/hao123/tools/python/bin/python2.7
 # -*- coding:utf-8 -*-
 import urllib2,sys
-import bs4,re,socket
+import bs4,re,socket,time
 from bs4 import BeautifulSoup
 """
 抓取网页信息（影片名、下载量、海报图片url等）
@@ -10,7 +10,7 @@ class WebCrawl:
     def __init__(self,name,url,type):
         self.name=name
         self.url=url
-        self.type=type
+        self.type=str(type)
         self.headers = {'User-Agent':'Mozilla/5.0 (Windows NT 5.2; rv:7.0.1) Gecko/20100101 FireFox/7.0.1'}
         self.req=urllib2.Request(self.url,headers=self.headers)
         self.info=urllib2.urlopen(self.req).info()
@@ -18,8 +18,7 @@ class WebCrawl:
         else:self.charset='utf8'
     def crawl_content(self,url):
         try:
-            socket.setdefaulttimeout(3)
-            print url
+            socket.setdefaulttimeout(10)
             req=urllib2.Request(url,headers=self.headers)
             content=urllib2.urlopen(req).read()
             return unicode(content,self.charset).encode('utf8')
@@ -30,16 +29,20 @@ class WebCrawl:
         m=re.search(num_pattern,text)
         return m.group()
     def crawl(self,url,crawl_info):
-        print url
         content=self.crawl_content(url)
+        while content == None:
+            time.sleep(1)
+            content=self.crawl_content(url)
         soup = BeautifulSoup(content)
         target = soup.findAll(crawl_info['block']['tag'],crawl_info['block']['attr'])
         raw_info = list()
+        update_time = time.strftime('%Y-%m-%d',time.localtime())
         for item in target:
             title=item.find(crawl_info['title']['tag'],crawl_info['title']['attr']).text
             num=self.parse_num(item.find(crawl_info['num']['tag'],crawl_info['num']['attr']).text)
             img=item.find(crawl_info['img']['tag'],crawl_info['img']['attr']).attrs['src']
-            raw_info.append({'Title':title,'Num':num,'Img':img})
+            raw_info.append({'raw_title':title,'num':num,'pic_url':img,'type':self.type,'update_time':update_time})
+        print '%s has been done, got %d records' % (url,len(raw_info))
         return raw_info
 
 def main():

@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 import ConfigParser
 import MySQLdb as mdb
-import time
+import time,sys
 
 class MySQLDB:
     def __init__(self,host,user,password,port,charset="utf8"):
@@ -47,13 +47,14 @@ class MySQLDB:
             d.append(_d)
         return d
     def insert(self,p_table_name,p_data):
-        for key in p_data:
-            p_data[key] = "'""'"+str(p_data[key])+"'"
-            key = ','.join(p_data.keys())
-            value = ','.join(p_data.values())
-            real_sql = "INSERT INTO " + p_table_name + "(" +key + ") VALUES (" + value + ")"
-            self.query("set names utf8")
-            return self.query(real_sql)
+        for key in p_data.keys():
+            p_data[key] = mdb.escape_string(p_data[key])
+            p_data[key] = "'"+str(p_data[key])+"'"
+        key = ','.join(p_data.keys())
+        value = ','.join(p_data.values())
+        real_sql = "INSERT INTO " + p_table_name + "(" +key + ") VALUES (" + value + ")"
+        self.query("set names utf8")
+        return self.query(real_sql)
     def commit(self):
         self.conn.commit()
     def close(self):
