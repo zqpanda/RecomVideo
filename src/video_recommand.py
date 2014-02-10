@@ -16,7 +16,7 @@ def para_read(para_path):
 #获取配置信息
 def get_global_conf():
     config = ConfigParser.ConfigParser()
-    config.read(global_conf_dir+"global_video_recommand.conf")
+    config.read('../conf/global_video_recommand.conf')
     return config
 #数据来源
 def deal_data_source(config, type):
@@ -39,7 +39,7 @@ def get_db_conf():
 def get_movie_data_from_db(db_conf):
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
-    sql = 'select * from movie_raw_data where update_time = \'2014-2-9\''
+    sql = 'select * from movie_raw_data where update_time = \'2014-2-10\''
     raw_data = mydb.queryAll(sql)
     mydb.close()
     return raw_data
@@ -55,8 +55,21 @@ def get_url_info(db_conf):
 def organize_data(movie_data):
     organized_data = dict()
     for record in movie_data:
-        if record['title'] not in organized_data.keys():
-            organized_data[record['title']]
+        pos = record['source_site'].find('_')
+        source_site=record['source_site']
+        if pos != -1: source_site=record['source_site'][:pos]
+        title=record['title']
+        num=int(record['num'])
+        if not organized_data.has_key(title):
+            organized_data[title]={
+                source_site:num
+            }
+        elif organized_data[title].has_key(source_site):
+            organized_data[title][source_site]+=num
+        else:
+            organized_data[title][source_site]=num
+    return organized_data
+
 
 #主程序
 def main():
@@ -65,7 +78,15 @@ def main():
     db_conf = get_db_conf()
     movie_data = get_movie_data_from_db(db_conf)
     url_info = get_url_info(db_conf)
-    print url_info
+#    print url_info
+    print len(movie_data)
+    organized_data = organize_data(movie_data)
+    print len(organized_data)
+    for k,v in organized_data.iteritems():
+        if len(v) > 1:
+            print 'Key: %s;Values:%s' % (k,v)
+
+
     '''
     organize_list = []
     print raw_data
