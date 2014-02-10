@@ -27,6 +27,7 @@ class MySQLDB:
             n=self.cur.execute(sql)
             return n
         except mdb.Error as e:
+            print sql
             print "Mysql Error %d: %s" % (e.args[0], e.args[1])
     def queryRow(self,sql):
         self.query("set names utf8")
@@ -48,8 +49,11 @@ class MySQLDB:
         return d
     def insert(self,p_table_name,p_data):
         for key in p_data.keys():
-            p_data[key] = mdb.escape_string(p_data[key])
-            p_data[key] = "'"+str(p_data[key])+"'"
+            if type(p_data[key]) == str:
+                p_data[key] = mdb.escape_string(p_data[key])
+                p_data[key] = "'"+p_data[key]+"'"
+            else:
+                p_data[key] = "'"+str(p_data[key])+"'"
         key = ','.join(p_data.keys())
         value = ','.join(p_data.values())
         real_sql = "INSERT INTO " + p_table_name + "(" +key + ") VALUES (" + value + ")"
