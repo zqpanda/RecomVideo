@@ -138,7 +138,8 @@ def main():
     #影片信息入库
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
-    mydb.insert('movie_raw_data',trim_data)
+    for record in trim_data:
+        mydb.insert('movie_raw_data',record)
     mydb.commit()
     mydb.close()
 #    for line in result:

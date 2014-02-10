@@ -41,7 +41,7 @@ class WebCrawl:
             title=item.find(crawl_info['title']['tag'],crawl_info['title']['attr']).text
             num=self.parse_num(item.find(crawl_info['num']['tag'],crawl_info['num']['attr']).text)
             img=item.find(crawl_info['img']['tag'],crawl_info['img']['attr']).attrs['src']
-            raw_info.append({'raw_title':title,'num':num,'pic_url':img,'type':self.type,'update_time':update_time})
+            raw_info.append({'raw_title':title,'num':num,'pic_url':img,'source_site':self.name,'type':self.type,'update_time':update_time})
         print '%s has been done, got %d records' % (url,len(raw_info))
         return raw_info
 
