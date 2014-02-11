@@ -39,7 +39,7 @@ def get_db_conf():
 def get_movie_data_from_db(db_conf):
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
-    sql = 'select * from movie_raw_data where update_time = \'2014-2-10\''
+    sql = 'select * from movie_raw_data where update_time = \'2014-2-11\''
     raw_data = mydb.queryAll(sql)
     mydb.close()
     return raw_data
@@ -86,8 +86,9 @@ def first_adjust_weight(organized_data,weight_dict):
 def sort_insert_db(db_conf,movie_score):
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
+    update_time = time.strftime('%Y-%m-%d',time.localtime())
     for title,score in movie_score.iteritems():
-        mydb.insert('movie_score',{'title':title,'score':score})
+        mydb.insert('movie_score',{'title':title,'score':str(score),'update_time':update_time})
     mydb.commit()
     mydb.close()
     return

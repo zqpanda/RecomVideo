@@ -21,7 +21,7 @@ class WebCrawl:
             socket.setdefaulttimeout(10)
             req=urllib2.Request(url,headers=self.headers)
             content=urllib2.urlopen(req).read()
-            return unicode(content,self.charset).encode('utf8')
+            return unicode(content,self.charset)
         except Exception as e:
             print url
     def parse_num(self,text):
@@ -71,8 +71,9 @@ def main():
         'img':{'tag':'img','attr':{}}
     }
     url = sys.argv[1]
-    myegy = WebCrawl('mazika2day',url,0)
-    result = myegy.crawl(url,mazika2day_desc)
-    print result
+    myegy = WebCrawl('myegy_ar',url,0)
+    result = myegy.crawl(url,arabseed_desc)
+    for line in result:
+        print 'Raw_Title:%s' % (line['raw_title'].encode('utf8'))
 if __name__ == '__main__':
     main()

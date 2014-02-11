@@ -49,11 +49,8 @@ class MySQLDB:
         return d
     def insert(self,p_table_name,p_data):
         for key in p_data.keys():
-            if type(p_data[key]) == str:
-                p_data[key] = mdb.escape_string(p_data[key])
-                p_data[key] = "'"+p_data[key]+"'"
-            else:
-                p_data[key] = "'"+str(p_data[key])+"'"
+            p_data[key] = mdb.escape_string(p_data[key])
+            p_data[key] = "'"+p_data[key]+"'"
         key = ','.join(p_data.keys())
         value = ','.join(p_data.values())
         real_sql = "INSERT INTO " + p_table_name + "(" +key + ") VALUES (" + value + ")"
