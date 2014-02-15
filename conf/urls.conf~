@@ -4,14 +4,16 @@ en_url=http://myegy.com/english-movies/
 in_url=http://myegy.com/in-movies/
 
 [cima4u]
-url=http://cima4u.com/
+ar_url=http://cima4u.com/pdep4
+en_url=http://cima4u.com/pdep20
+in_url=http://cima4u.com/pdep11
 
 [mazika2day]
 url=http://mazika2day.com/
 d_url=http://mazika2day.com/cat,1,
 f_url=http://mazika2day.com/cat,3,
-d_suffix=%D8%A7%D9%81%D9%84%D8%A7%D9%85%20%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9.html
-f_suffix=%D8%A7%D9%81%D9%84%D8%A7%D9%85%20%D8%A7%D8%AC%D9%86%D8%A8%D9%8A%D8%A9.html
+d_suffix=%D8%A7%D9%81%D9%84%D8%A7%D9%85%20%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9
+f_suffix=%D8%A7%D9%81%D9%84%D8%A7%D9%85%20%D8%A7%D8%AC%D9%86%D8%A8%D9%8A%D8%A9
 
 [arabseed]
 d_url=http://www.arabseed.com/ar/category/view/41/

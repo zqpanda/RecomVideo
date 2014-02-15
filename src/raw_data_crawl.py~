@@ -55,8 +55,10 @@ def main():
         'page_list':['','p2/','p3/','p4/','p5/'],
     }
     cima4u_info={
-        'url':urls_conf.get('cima4u','url'),
-        'page_list':['','p2.html','p3.html','p4.html','p5.html'],
+        'ar_url':urls_conf.get('cima4u','ar_url'),
+        'en_url':urls_conf.get('cima4u','en_url'),
+        'in_url':urls_conf.get('cima4u','in_url'),
+        'page_list':['.html','-p2.html','-p3.html','-p4.html','-p5.html'],
     }
     mazika2day_info={
         'd_url':urls_conf.get('mazika2day','d_url'),
@@ -98,10 +100,14 @@ def main():
         'port' : db_cf.getint('db','db_port')
     }
     #内容抓取cima4u
-    cima4u = WebCrawl('cima4u',cima4u_info['url'],0)
+    cima4u_ar = WebCrawl('cima4u_ar',cima4u_info['url'],0)
+    cima4u_en = WebCrawl('cima4u_en',cima4u_info['url'],0)
+    cima4u_in = WebCrawl('cima4u_in',cima4u_info['url'],0)
     cima4u_data = list()
     for page in cima4u_info['page_list']:
-        cima4u_data.extend(cima4u.crawl(cima4u_info['url']+page,cima4u_desc))
+        cima4u_data.extend(cima4u_ar.crawl(cima4u_info['ar_url']+page,cima4u_desc))
+        cima4u_data.extend(cima4u_en.crawl(cima4u_info['en_url']+page,cima4u_desc))
+        cima4u_data.extend(cima4u_in.crawl(cima4u_info['in_url']+page,cima4u_desc))
     print 'Cima4u finished! Got %d records' %(len(cima4u_data))
     #myegy
     myegy_ar = WebCrawl('myegy_ar',myegy_info['ar_url'],1)
@@ -139,8 +145,9 @@ def main():
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
     for record in trim_data:
-        mydb.insert('movie_raw_data',record)
-    mydb.commit()
+        flag = mydb.insert('movie_raw_data',record)
+        if flag == 0:print "Something is wrong %s" %(record)
+    if flag != 0: mydb.commit()
     mydb.close()
 #    for line in result:
 #        print 'Raw Title: %s' % (line['raw_title'])

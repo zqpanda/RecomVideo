@@ -40,7 +40,7 @@ while ($row = mysqli_fetch_array($result)){
 }
 //var_dump($movie_info);exit;
 //视频TopList
-$sql = "select title,score,update_time from movie_score order by score desc limit 1,100";
+$sql = "select title,score,update_time from movie_score order by score desc limit 0,100";
 $query_list = mysqli_query($dbc,$sql) or die('Error querying database.no.2');
 $top_list = array();
 $index = 0;
