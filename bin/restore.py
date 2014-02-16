@@ -56,6 +56,8 @@ class MySQLDB:
         real_sql = "INSERT INTO " + p_table_name + "(" +key + ") VALUES (" + value + ")"
         self.query("set names utf8")
         return self.query(real_sql)
+    def escape_string(self,item):
+        return mdb.escape_string(item)
     def commit(self):
         self.conn.commit()
     def close(self):

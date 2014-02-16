@@ -39,19 +39,45 @@ def get_db_conf():
 def get_movie_data_from_db(db_conf):
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
-    sql = 'select * from movie_raw_data where update_time = \'2014-2-11\''
+    sql = 'select * from movie_raw_data where update_time = \'2014-2-14\''
     raw_data = mydb.queryAll(sql)
+    trim_conf_file = '../conf/trim_list.conf'
+    input_file_handler = open(trim_conf_file)
+    trim_list = []
+    for line in input_file_handler.readlines():
+        line = line.strip()
+        trim_list.append(line)
+    input_file_handler.close()
+    update_count = 0
+    for i in xrange(len(raw_data)):
+        temp_name = raw_data[i]["raw_title"]
+        old_title = raw_data[i]["title"]
+        for j in xrange(len(trim_list)):
+            temp_name = temp_name.replace(trim_list[j],'')
+        if old_title != temp_name.strip():
+            update_count += 1
+#            print 'Stop';sys.exit()
+            new_title = mydb.escape_string(temp_name.strip())
+            raw_data[i]["title"] = new_title
+            id = raw_data[i]["id"]
+            update_sql = 'update movie_raw_data set title = \''+new_title+'\' where id = \''+id+'\''
+            mydb.query(update_sql)
+            mydb.commit()
+    print '%d records have been updated' % (update_count)
     mydb.close()
     return raw_data
 #获取站点信息（如站点类型及权值）
 def get_weight_dict(db_conf):
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
-    sql = 'select url_name,url_weight from url_info'
+    sql = 'select url_name,url_type,url_weight from url_info'
     url_info = mydb.queryAll(sql)
     weight_dict = dict()
     for item in url_info:
-        weight_dict[item['url_name']]=int(item['url_weight'])
+        weight_dict[item['url_name']]={
+            'type':item['url_type'],
+            'weight':int(item['url_weight'])
+        }
     mydb.close()
     return weight_dict
 #影片信息汇总，以trim-title作为key值
@@ -76,9 +102,14 @@ def organize_data(movie_data):
 def first_adjust_weight(organized_data,weight_dict):
     movie_score=dict()
     for k,v in organized_data.iteritems():
-        sum_of_weight = 0
+        sum_of_weight = {
+            '0':0,
+            '1':0,
+            '2':0
+        }
         for site,num in v.iteritems():
-            sum_of_weight += weight_dict[site]*num
+            if weight_dict[site]['type'] == '0':sum_of_weight['0'] += weight_dict[site]['weight']*num
+            else:sum_of_weight['1'] += weight_dict[site]['weight']*num
         movie_score[k] = sum_of_weight
     return movie_score
 
@@ -87,8 +118,12 @@ def sort_insert_db(db_conf,movie_score):
     mydb = MySQLDB(db_conf['host'],db_conf['user'],db_conf['passwd'],db_conf['port'])
     mydb.selectDb('video_recom_ar')
     update_time = time.strftime('%Y-%m-%d',time.localtime())
-    for title,score in movie_score.iteritems():
-        mydb.insert('movie_score',{'title':title,'score':str(score),'update_time':update_time})
+    clean_old_score = 'delete from movie_score where update_time = \''+update_time+'\''
+    mydb.query(clean_old_score)
+    mydb.commit()
+    for title,score_dict in movie_score.iteritems():
+        total_score = score_dict['0'] + score_dict['1'] + score_dict['2']
+        mydb.insert('movie_score',{'title':title,'online_score':str(score_dict['0']),'download_score':str(score_dict['1']),'rank_score':str(score_dict['2']),'score':str(total_score),'update_time':update_time})
     mydb.commit()
     mydb.close()
     return
@@ -96,19 +131,14 @@ def sort_insert_db(db_conf,movie_score):
 
 #主程序
 def main():
-    global_config = get_global_conf()
-    deal_data_source(global_config, "online")
+#    global_config = get_global_conf()
+#    deal_data_source(global_config, "online")
     db_conf = get_db_conf()
     movie_data = get_movie_data_from_db(db_conf)
     weight_dict = get_weight_dict(db_conf)
-#    print url_info
-#    print len(movie_data)
     organized_data = organize_data(movie_data)
-#    print len(organized_data)
     movie_score=first_adjust_weight(organized_data,weight_dict)
-#    temp_list = movie_score.keys()
-#    test_set = set(temp_list)
-#    print len(test_set)
+#    print len(movie_score)
     sort_insert_db(db_conf,movie_score)
     print 'Finished'
 
